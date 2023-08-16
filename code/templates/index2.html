@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<!-- saved from url=(0032)http://127.0.0.1:5500/index.html -->
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+      <!-- <script src="../assets/js/color-modes.js"></script> -->
+      
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <title>Projct Fabrotics</title>
+      <script type="text/javascript" src="./index_files/jquery.min.js">
+      </script>
+      <script type="text/javascript">
+         var $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+      </script>
+      <!-- <link rel="shortcut icon" type="image/png" href="Images/icon.png"> -->
+      <script src="./index_files/jquery.min(1).js"></script>
+      <link href="./index_files/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+      <link rel="stylesheet" media="all" type="text/css" href="./index_files/styles.css">
+      <link href="./index_files/css" rel="stylesheet">
+      <script src="./index_files/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
+   </head>
+    
+   <body onload="update_values();">
+      <div id="topbar">
+         <div >
+            <h1>Fabrobotics: Control GUI</h1>
+         </div>
+      </div>
+      <div id="content" class="row">
+         <div class="col-12 col-md-6">
+            <div class="module">
+               <h2>Planning UI</h2>
+               <div id="toioPlanner" class="row">
+                  <div class="col-6">
+                     <svg height="250" width="250" id="svg">
+                        <path d= "M 0 0" stroke="black" stroke-width="1" fill="none" id="gcodepath"/>
+                        <rect height=0 width=0 id="cubes" stroke="red" stroke-width="2" stroke-dasharray="5,5" fill="none"/>
+                     </svg>
+                     <form action="/action">
+                        <input type="range" min="-0" max="100" id="slide" name="slide"/>
+                     </form>
+                  </div>
+                  <div class="col-6">
+                     <div>
+                        <label for="x">Select Toio:</label>
+                        <br>
+                        <div class="btn-group" role="group" aria-label="Basic radio toggle button group">
+                           <input type="radio" class="btn-check" id="{{toio}}" name="toio" value="{{toio}}" autocomplete="off" required>
+                           <label class="btn btn-outline-light" for="{{toio}}">{{toio}}</label>
+                        </div>
+                     </div>
+                     <br>
+                     <div id="toioCoords">
+                        <div>
+                           <label for="x">x:</label>
+                           <input class="coords" type="text" id="toiox" name="x"><br><br>
+                        </div>
+                        <div>
+                           <label for="y">y:</label>
+                           <input class="coords" type="text" id="toioy" name="y"><br><br>
+                        </div>
+                     </div>
+                     <div>
+                        <input type="submit" class="btn btn-outline-light" value="Confirm Toio Placement">
+                     </div>
+                  </div>
+               </div>
+               <br>
+               <h2>File Manager</h2>
+               <div id="printPlanner" class="row">
+                  <div class="col-lg-6">
+                     <form action="/uploader" method = "POST" enctype="multipart/form-data">
+                        <input type="file" name="file"/>
+                        <div class="btn-group" role="group" aria-label="Basic radio toggle button group">
+                           <input type="radio" class="btn-check" id="toio_print" name="toio_print" value="print_on" autocomplete="off" required>
+                           <label class="btn btn-outline-light" for="toio_print">Use Toio as Bed</label>
+                         
+                           <input type="radio" class="btn-check" id="toio_print2" name="toio_print" value="support" autocomplete="off">
+                           <label class="btn btn-outline-light" for="toio_print2">Use Toio as Support</label>
+                         
+                           <input type="radio" class="btn-check" id="toio_print3" name="toio_print" value="normal" autocomplete="off">
+                           <label class="btn btn-outline-light" for="toio_print3">Don't Use Toio</label>
+                        </div>  
+                        <input class="btn btn-outline-light" type="submit" value="Load G-Code"/>
+                      </form>
+                  </div>
+                  <div class = "col-lg-6 centered" id = "uploaded">
+                  </div>
+               </div>
+            </div>
+         </div>
+         <div class="col-12 col-md-6">
+            <div class="module">
+               <div id="printStatus" class="status">
+                  <h2>Print Status</h2>
+                  <table>
+                     <thead>
+                       <tr>
+                         <td>G-Code Segments:</td>
+                         <td></td>
+                         <td>Num Segments:</td>
+                         <td></td>
+                         <td>Event Type:</td>
+                         <td></td>
+                       </tr>
+                     </thead>
+                  </table>
+               </div>
+               <br>
+               <div id="printerStatus" class="status">
+                  <h2>Printer Status</h2>
+                  <table>
+                     <thead>
+                       <tr>
+                         <td>Printer Status:</td>
+                         <td></td>
+                         <td>Bed Temp:</td>
+                         <td></td>
+                         <td>Extruder Temp:</td>
+                         <td></td>
+                       </tr>
+                     </thead>
+                  </table>
+               </div>
+               <br>
+               <div id="toioStatus">
+                  <div id="toioWatch">
+
+                  </div>
+                  <br>
+                  <div class="col-lg-12">
+                        
+                     <form id="toioAdd" method="POST" action="/toio">
+                        <label for="number">Enter Toio Num:</label>
+                        <input type="text" id="number" name="num" placeholder="48">
+                        <input class="btn btn-outline-light" type="submit" value="Add Toio" name="action1">
+                     </form> 
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+      <footer>
+         <div class="row">
+            <div class="col-15" id="printButton">
+               <form method="POST" action="/printer">
+                  <input class="btn btn-outline-light" style = "width:100%;" type="submit" value="Start Print" name="action1"/>
+               </form>
+            </div>
+            <div class="col-105">
+               <h2>Timeline</h2>
+               <div class=" timeline">
+                  <div><div class="event print">Print Event</div></div>
+                  <div><div class="event toio">Toio Event</div></div>
+                  <div><div class="event print">Print Event</div></div>
+                  <div><div class="event toio">Toio Event</div></div>
+                  <div><div class="event print">Print Event</div></div>
+               </div>
+            </div>
+         </div>
+      </footer>
+   </body>
+
+   <script>
+      // <![CDATA[  <-- For SVG support
+      if ('WebSocket' in window) {
+         (function () {
+            function refreshCSS() {
+               var sheets = [].slice.call(document.getElementsByTagName("link"));
+               var head = document.getElementsByTagName("head")[0];
+               for (var i = 0; i < sheets.length; ++i) {
+                  var elem = sheets[i];
+                  var parent = elem.parentElement || head;
+                  parent.removeChild(elem);
+                  var rel = elem.rel;
+                  if (elem.href && typeof rel != "string" || rel.length == 0 || rel.toLowerCase() == "stylesheet") {
+                     var url = elem.href.replace(/(&|\?)_cacheOverride=\d+/, '');
+                     elem.href = url + (url.indexOf('?') >= 0 ? '&' : '?') + '_cacheOverride=' + (new Date().valueOf());
+                  }
+                  parent.appendChild(elem);
+               }
+            }
+            var protocol = window.location.protocol === 'http:' ? 'ws://' : 'wss://';
+            var address = protocol + window.location.host + window.location.pathname + '/ws';
+            var socket = new WebSocket(address);
+            socket.onmessage = function (msg) {
+               if (msg.data == 'reload') window.location.reload();
+               else if (msg.data == 'refreshcss') refreshCSS();
+            };
+            if (sessionStorage && !sessionStorage.getItem('IsThisFirstTime_Log_From_LiveServer')) {
+               console.log('Live reload enabled.');
+               sessionStorage.setItem('IsThisFirstTime_Log_From_LiveServer', true);
+            }
+         })();
+      }
+      else {
+         console.error('Upgrade your browser. This Browser is NOT supported WebSocket for Live-Reloading.');
+      }
+      // ]]>
+   </script>
+   
+   <script>
+            var intervalID = setInterval(update_values,1000);
+      function update_values() {
+         $.getJSON($SCRIPT_ROOT + '/_update',
+               
+            function(data) {
+               $('#result').text(data.result);
+               $('#progress').text(data.progress);
+               $('#num_chunks').text(data.num_chunks);
+               $('#event_type').text(data.event_type);
+               $('#temp1').text(data.temp1);
+               $('#temp2').text(data.temp2);
+               $('#status').text(data.status);
+               $('#current').text(data.current);
+               $('#queue').text(data.queue);
+               console.log(data)
+               data.events.forEach(event => {
+                  const eventName = "#" + event.name
+                  if (event.status == "current" && !$(eventName).hasClass("current")) {
+                     $(eventName).addClass("current")
+                  }
+                  else if (event.status == "complete" && $(eventName).hasClass("current")) {
+                     $(eventName).removeClass("current")
+                     $(eventName).addClass("complete")
+                  }
+               });
+            });
+         };
+
+      const svg = document.getElementById("svg");
+      const path = document.getElementById("gcodepath");
+   
+      svg.addEventListener("click", (e) => {
+         const rect = svg.getBoundingClientRect();
+         const x = (e.clientX - rect.left); //x position within the element.
+         const y = (e.clientY - rect.top);  //y position within the element.
+         console.log(x * 180 / rect.height, y * 180 / rect.width);
+         document.getElementById("toiox").value = x * 180 / rect.height;
+         document.getElementById("toioy").value = y * 180 / rect.width;
+         
+         const cubes = document.getElementById("cubes")
+   
+         cubes.setAttribute("x", x - (16 * rect.height / 180));
+         cubes.setAttribute("y", y - (16 * rect.height / 180));
+         cubes.setAttribute("height", 32 * rect.height / 180);
+         cubes.setAttribute("width", 32 * rect.height / 180);
+      })
+   
+      slide.value = 0;
+   
+      const httpRequest = new XMLHttpRequest()
+      httpRequest.onreadystatechange = function (data) {
+         const d = JSON.parse(this.responseText);
+         if (d.length > 1) {
+            path.setAttribute("d", d[0]);
+            slide.addEventListener("input", (e) => path.setAttribute("d", d[(Math.round(e.target.value * d.length / 100))]));
+         }
+      }
+      httpRequest.open('GET', '/getsvg');
+      httpRequest.send();
+      
+   </script>
+   
+   <style>
+      #printPlanner .btn-group {
+         margin: 7px 0px;
+      }
+
+      .module .col-6 {
+         padding: 0;
+      }
+
+      #slide {
+         width: 250px;
+      }
+   
+      svg {
+         background-color: white;
+      }
+   
+      #commands {
+           display: flex;
+      }
+   
+      #content{
+         overflow-y: scroll;
+         width:100%;
+         height:75vh;
+         padding:2.5vh;
+         margin: 0;
+         /* outline:auto; */
+      }
+   
+      #topbar{
+         width: 100%;
+         height: 10vh;
+         color: #ffffff;
+         background-color: #3E3E3E;
+         padding: 1em;
+         box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+      }
+
+      #gcode {
+         height:40vh;
+         background-color:#3E3E3E;
+         padding:2%;
+         margin:auto;
+         width:100%;
+         margin-bottom:2%;
+         display: flex;
+         flex-direction: row
+         /* width:auto; */
+   
+      }
+
+      #toios {
+         height:40vh;
+         width:100%;
+         padding:2%;
+         margin:auto;
+         
+         margin-bottom:2%;
+        
+      }
+
+      .coords {
+         width:3rem;
+      }
+
+      footer {
+         height:15vh;
+         background-color:#3E3E3E;
+         padding: 1% 3%;
+         width: 100vw;
+         /* overflow-x: scroll; */
+      }
+
+      #files {
+         height:23vh;
+         padding:2%;
+         background-color: #3E3E3E;
+         margin:auto;
+         width:100%;
+         color:#ffffff;
+      }
+
+      #commands {
+         height:23vh;
+         padding:2%;
+         background-color: #3E3E3E;
+         margin:auto;
+         width:100%;
+         margin-bottom:2%;
+         color:#ffffff;
+      }
+   
+      #uploaded{
+         overflow: scroll;
+         height: 20vh;
+         padding:0;
+         text-align:center;
+         margin:auto;
+         border-radius:5px;
+         width:40%;
+         background-color: #3E3E3E;
+         color: white;
+         align-items: center;
+         display: flex;
+         outline: solid white 1.5px;
+         flex-direction: column;
+      }
+   
+      #uploaded p {
+         padding: 0.25rem 0;
+         width: 100%;
+         margin: 0;
+         overflow-wrap: break-word;
+      }
+   
+      #uploaded:nth-child(even) {
+         background: #595959;
+         color: white;
+      }
+
+      #toioCoords {
+         display: flex;
+         flex-direction: row;
+      }
+
+      #toioCoords > div {
+         width:50%;
+      }
+
+      #toioPlanner > div > div {
+         justify-content: center;
+         display: flex;
+      }
+
+      #toioPlanner > div > div > div {
+         margin: auto;
+         width: fit-content;
+      }
+      
+      .event{
+         color:white;
+         outline:auto;
+      }
+
+      .timeline {
+         display: flex;
+         flex-direction: row;
+      }
+      
+      .timeline > div {
+         width: fit-content;
+      }
+
+      .timeline > div > div {
+         /* box-shadow: inset 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19); */
+         width: fit-content;
+         height:fit-content;
+         display:inline-block;
+         padding:0.5rem;
+         margin-right: 10px;
+         text-align:center;
+         overflow:hidden;
+         justify-content:center;
+         text-align:center;
+         outline: white solid 1.5px;
+         border-radius:5px;
+      }
+
+      .toio {
+         margin-top: 20%;
+      }
+   
+      h2 {
+         font-size:120%;
+         text-decoration:underline;
+         color:#ffffff;
+      }
+
+      table { 
+         border: none;
+         width: 100%;
+      }
+      
+      .module {
+         height: 70vh;
+         background-color:#3E3E3E;
+         border-radius:10px;
+         color:#ffffff;
+         padding:2vh 4vh;
+         box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+      }
+      
+      body {
+         font-family: Jost;
+         /* Set all font in the page to Helvetica with font formatting */
+         font-size: 100%; /* Generally set the font-size to 100% in the body 
+                           - you can then change with em in the other areas */
+         line-height: 1.7em; /* The line-height property in CSS controls the space 
+                              between lines of text. */
+      }
+
+   
+      .centered{
+         justify-content:center;
+         text-align:center;
+      }
+   
+      .print.complete {
+         color: white;
+         background-color: #26567E;
+      }
+
+      .toio.complete {
+         color: white;
+         background-color: #D1495B;
+      }
+   
+      @keyframes changeColor {         
+         50% {
+            background-color: #3E3E3E;
+            color: white;
+         }
+      }
+   
+      .current {
+         background-color: white;
+         color: #3E3E3E;
+         animation: changeColor ease;
+         animation-iteration-count: infinite;
+         animation-duration: 2s;
+         animation-fill-mode: both;
+      }
+   
+      .val {
+         text-align: center;
+         margin-right:2%;
+         width:100px;
+      }
+
+      .title {
+         text-align: right;
+         margin-left: 2em;
+      }
+
+      #printButton {
+         display: flex;
+         align-items: center;
+         justify-content: center;
+      }
+
+      #printButton input {
+         text-transform: uppercase;
+         font-size: x-large;
+         border: solid 3px;
+      }
+
+      #printButton input:hover {
+         border: none;
+         color: #3E3E3E;
+      }
+
+      footer > .row {
+         height: 100%;
+      }
+
+      .col-15 {
+         flex: 0 0 auto;
+         width: 12.5%;
+      }
+
+      .col-105 {
+         flex: 0 0 auto;
+         width: 87.5%;
+      }
+
+      .btn-outline-light {
+         --bs-btn-active-color: #3E3E3E;
+         --bs-btn-hover-color: #3E3E3E;
+      }
+
+      #toioWatch {
+         width: 100%;
+         height: 30vh;
+         background-color: #595959;
+         border-radius: 5px;
+         border: solid;
+      }
+
+      #toioAdd {
+         justify-content:center; 
+         align-items: center;
+         display:flex; 
+      }
+
+      #toioAdd input {
+         margin-left: 5px;
+      }
+   </style>
+</html>
