@@ -334,7 +334,7 @@ def background():
         count = 0
         if(count == 4):
             count = 0
-        #Constantly drives all connected toio forward for normal and support prints
+        #Constantly targets corner of bed to stay out of the way of extruder.
         elif(timeline.current_print_type() == "normal" or timeline.current_print_type() == "support"):
             if(len(timeline.toioMan.names) > 0 and count == 0):
                 place = 0
