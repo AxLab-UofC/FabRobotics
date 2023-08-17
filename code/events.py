@@ -35,11 +35,18 @@ class GCode_Event(Event):
         self.file = file
         self.style = style
         self._id = _id
+        self.x = int(x)
+        self.y = int(y)
         if(file != "start_up.gcode" and file != "cool_down.gcode"):
-            print("HERE")
             self.cut(self.file)
         if(self.style == "print_on"):
             self.move_up(26.2, self.file)
+        if(self.x != -1 and self.y != -1):
+            self.support_slicer()
+            print("cut")
+            print(self.x)
+            print(self.y)
+        
     
     #modifys Gcode file to move print on top of toio
     def move_up(self, offset, file):
@@ -92,7 +99,69 @@ class GCode_Event(Event):
            
             f.seek(0)          
             f.write(new_Gcode)
-          
+    #Removes the section of gcode where the toio is used as a support when "use toio as a support" is selected
+    def support_slicer(self):
+        xmin = self.x - 16
+        xmax = self.x + 16
+        ymin = self.y - 16
+        ymax = self.y + 16
+        height = 0
+
+        lines = self.file_to_array(self.file)
+        with open(self.file, 'w') as f:
+            new_Gcode = ""
+            for line in lines:
+                valx = 0
+                valy = 0
+               
+                
+                section = line.split(" ")
+                for sec in section:
+                    if 'X' in sec:
+                        if (len(sec)<10 and ';' not in sec):  
+                            valx = float(sec[1:])
+                            skip_check = True
+                           
+                    if 'Y' in sec:  
+                        if (len(sec)<10 and ';' not in sec):
+                            valy = float(sec[1:])
+                            skip_check = True
+
+                    if 'Z' in sec:  
+                        if (len(sec)<10 and ';' not in sec):
+                            height = float(sec[1:])
+                if(height < 26.4):
+                    if(valx > xmin and valx < xmax and valy > ymin and valy < ymax):
+                        continue
+                    else:
+                        new_Gcode += line
+                else:
+                    new_Gcode += line
+                    
+                            
+        
+                
+                # if(skip_check):
+                #     if(valx > xmin and valx <xmax and valy > ymin and valy < ymax):
+                #         skip_check = False
+                #         print("Skip")
+                #         print(line)
+                #         print(xmax)
+                #         print(xmin)
+                #         print(ymax)
+                #         print(ymin)
+                #         continue
+                # else:
+                    # skip_check = False
+                   
+                    
+
+                
+            f.seek(0)          
+            f.write(new_Gcode)
+
+
+
     #returns file name
     def get_file(self):
         return self.file

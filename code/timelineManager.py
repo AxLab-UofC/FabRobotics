@@ -31,82 +31,20 @@ class TimelineManager:
         self.svgs = []
         self.queue.append(GCode_Event(1, "start_up.gcode", "Start Up Printer")) #Adds start up printer event
         # self.modify_dock(882,358, "Print Toio Dock on Bed") #THIS LINE FOR ADDING DOCK
-        # event2 = ToioEvent("First Toio Move in")
-        # event2.addTarget(1, 882, 358+40, 270)
-        # event2.addTarget(1, 882, 358+20, 270)
-        # event2.addTarget(1,882,358, 270)
-        # event2.addMotor(1, 10, 10, 0)
-        # self.queue.append(event2) 
-        # self.add_Gcode_event("villian.gcode", "Print <" + "> on Toio", "print_on")
-        # event3 = ToioEvent("Second Toio Move in")
-        # event3.addTarget(1, 882, 358+40, 270)
-        # event3.addTarget(1, 920, 358+50, 90)
-        # event3.addTarget(0, 882, 358+40, 270)
-        # event3.addTarget(0, 882, 358+20, 270)
-        # event3.addTarget(0,882,358, 270)
-        # event3.addMotor(0, 10, 10, 0)
-        # event3.addTarget(1,882,400,180)
-        # event3.addTarget(1,780,430,180)
-        # event3.addMotor(1, 80, 80, 250)
-        # event3.addMotor(1, 80, 80, 250)
-        # self.queue.append(event3) 
-       
-        # self.add_Gcode_event("villian.gcode", "Print <" + "> on Toio", "print_on")
-        # # self.queue.append(GCode_Event("dock_outline.gcode", "Outline"))
         self.queue.append(GCode_Event(1, "cool_down.gcode", "Cool Down Printer", "finishing")) #adds cool down printer event
         self.printMan.Api.fileUpload("start_up.gcode") #uploads both to octoprint
         self.printMan.Api.fileUpload("cool_down.gcode")
-        event = ToioEvent("Motor Down Ramp") #Event for motoring down ramp
-        event.addTarget(0,882,400,180) #Note: Coordinates are specific to our bed.
-        event.addTarget(0,780,430,180)
+
+        # event = ToioEvent("Motor Down Ramp") #Event for motoring down ramp
+        # event.addTarget(0,882,400,180) #Note: Coordinates are specific to our bed.
+        # event.addTarget(0,780,430,180)
        
-        event.addMotor(0, 80, 80, 250)
-        event.addMotor(0, 80, 80, 250)
-        self.queue.append(event) 
+        # event.addMotor(0, 80, 80, 250)
+        # event.addMotor(0, 80, 80, 250)
+        # self.queue.append(event) 
        
-        # self.printMan.Api.fileUpload("dock_outline.gcode")
-        
-        # self.modify_dock(850, 357, "dock3.gcode")
-        # self.modify_dock(882, 400, "dock1.gcode")
-        # attempt at controling 2 toio
-        # event1 = ToioEvent("Target Corners")
-        # event1.addTarget(0, (795 + 0*30),430,270)
-        # event1.addTarget(1, (795 + 1*30),430,270)
-        # self.queue.append(event1) 
-
-        # event2 = ToioEvent("First Toio Move in")
-        # event2.addTarget(1, 882, 357+40, 270)
-        # event2.addTarget(1, 882, 357+20, 270)
-        # event2.addTarget(1,882,357, 270)
-        # event2.addMotor(1, 10, 10, 0)
-        # self.queue.append(event2) 
-
-        # event3 = ToioEvent("Second Toio Move in")
-        # event3.addTarget(1, 882, 357+40, 270)
-        # event3.addTarget(1, 920, 357+50, 90)
-        # event3.addTarget(0, 882, 357+40, 270)
-        # event3.addTarget(0, 882, 357+20, 270)
-        # event3.addTarget(0,882,357, 270)
-        # event3.addMotor(0, 10, 10, 0)
-        # event3.addTarget(1,882,400,180)
-        # event3.addTarget(1,780,430,180)
-        # event3.addMotor(1, 80, 80, 250)
-        # event3.addMotor(1, 80, 80, 250)
-        # self.queue.append(event3) 
-
-        # event4 = ToioEvent("Motor Down Ramp")
-        # event4.addTarget(0,882,400,180)
-        # event4.addTarget(0,780,430,180)
        
-        # event4.addMotor(0, 80, 80, 250)
-        # event4.addMotor(0, 80, 80, 250)
-        # self.queue.append(event4) 
         
-
-
-        
-
-
     #All files come through here, will split up a file into chunks of 2000 lines and create gcode events for them as well as 
     #ids so they can be grouped together
     def add_Gcode_event(self, file, name = "default", style = "normal", x = -1, y = -1):
@@ -121,29 +59,40 @@ class TimelineManager:
                 lines = lines[2000:]
                 self.write_file(chunk,file_name)
                 event = GCode_Event(val, file_name, name, style, x, y)
-                self.queue.insert(len(self.queue)-2, event)
+                self.queue.insert(len(self.queue)-1, event)
               
                 self.printMan.Api.fileUpload(event.file)
                 val +=1
             file_name = file[:len(file)-6] + str(val) + ".gcode"
             self.write_file(lines,file_name)
             event = GCode_Event(val, file_name, name, style, x, y)
-            self.queue.insert(len(self.queue)-2, event)
+            self.queue.insert(len(self.queue)-1, event)
             self.printMan.Api.fileUpload(event.file)
         #For files smaller than 2000 lines
         else:
             event = GCode_Event(1, file, name, style, x, y)
-            self.queue.insert(len(self.queue)-2, event)
+            self.queue.insert(len(self.queue)-1, event)
             self.printMan.Api.fileUpload(event.file)
 
     #Creates a toio event and adds it in between start up and cool down
     def add_Toio_event(self, name, code = []):
         event = ToioEvent(name, code)
-        self.queue.insert(-2, event)
+        self.queue.insert(-1, event)
 
      #Creates a general event(either toio or gcode) and adds it in between start up and cool down
     def addEvent(self, event:Event) -> None:
-        self.queue.insert(-2, event) 
+        self.queue.insert(-1, event) 
+    
+    def addMotorDownRamp(self):
+        event = ToioEvent("Motor Down Ramp") #Event for motoring down ramp
+        event.addTarget(0,882,400,180) #Note: Coordinates are specific to our bed.
+        event.addTarget(0,780,430,180)
+       
+        event.addMotor(0, 80, 80, 250)
+        event.addMotor(0, 80, 80, 250)
+        self.addEvent(event)
+       
+
     
     #will rewrite a new file with inputted Gcode
     def write_file(self, Gcode, file_name):
@@ -250,7 +199,6 @@ class TimelineManager:
 
             for line in content: 
                 Gcode.append(line)
-            print(Gcode)
             return Gcode
     
     #clears and resets the queue
@@ -328,5 +276,49 @@ class TimelineManager:
             
         self.write_file(new_Gcode, n)
         self.add_Gcode_event(n, name, "normal")
+
+
+     #Note: The below code was used to attempt continous multiprints. 
+        # event1 is both robots target the corner
+        # event2 is the first toio moving into a dock
+        # event3 is the robots switching(Most issues)
+        # event4 is the second robot driving down the dock
+
+        ###########################################
+        # self.modify_dock(850, 357, "dock3.gcode")
+        # self.modify_dock(882, 400, "dock1.gcode")
+        # attempt at controling 2 toio
+        # event1 = ToioEvent("Target Corners")
+        # event1.addTarget(0, (795 + 0*30),430,270)
+        # event1.addTarget(1, (795 + 1*30),430,270)
+        # self.queue.append(event1) 
+
+        # event2 = ToioEvent("First Toio Move in")
+        # event2.addTarget(1, 882, 357+40, 270)
+        # event2.addTarget(1, 882, 357+20, 270)
+        # event2.addTarget(1,882,357, 270)
+        # event2.addMotor(1, 10, 10, 0)
+        # self.queue.append(event2) 
+
+        # event3 = ToioEvent("Second Toio Move in")
+        # event3.addTarget(1, 882, 357+40, 270)
+        # event3.addTarget(1, 920, 357+50, 90)
+        # event3.addTarget(0, 882, 357+40, 270)
+        # event3.addTarget(0, 882, 357+20, 270)
+        # event3.addTarget(0,882,357, 270)
+        # event3.addMotor(0, 10, 10, 0)
+        # event3.addTarget(1,882,400,180)
+        # event3.addTarget(1,780,430,180)
+        # event3.addMotor(1, 80, 80, 250)
+        # event3.addMotor(1, 80, 80, 250)
+        # self.queue.append(event3) 
+
+        # event4 = ToioEvent("Motor Down Ramp")
+        # event4.addTarget(0,882,400,180)
+        # event4.addTarget(0,780,430,180)
+       
+        # event4.addMotor(0, 80, 80, 250)
+        # event4.addMotor(0, 80, 80, 250)
+        # self.queue.append(event4) 
 
 
