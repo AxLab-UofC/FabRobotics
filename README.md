@@ -5,6 +5,7 @@ It is a digital Fabrication pipeline that is used to control 3D printer and toio
 Currently our app is capable of printing one print on one or two toio(theroretically three but hasnt been tested), using the toio as a support, and printing regularly. 
 
 lindstromhci@gmail.com
+
 ramarkob@uchicago.edu
 
 
