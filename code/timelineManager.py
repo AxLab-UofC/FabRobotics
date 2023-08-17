@@ -30,20 +30,10 @@ class TimelineManager:
         self.finish = False
         self.svgs = []
         self.queue.append(GCode_Event(1, "start_up.gcode", "Start Up Printer")) #Adds start up printer event
-        # self.modify_dock(882,358, "Print Toio Dock on Bed") #THIS LINE FOR ADDING DOCK
         self.queue.append(GCode_Event(1, "cool_down.gcode", "Cool Down Printer", "finishing")) #adds cool down printer event
         self.printMan.Api.fileUpload("start_up.gcode") #uploads both to octoprint
         self.printMan.Api.fileUpload("cool_down.gcode")
 
-        # event = ToioEvent("Motor Down Ramp") #Event for motoring down ramp
-        # event.addTarget(0,882,400,180) #Note: Coordinates are specific to our bed.
-        # event.addTarget(0,780,430,180)
-       
-        # event.addMotor(0, 80, 80, 250)
-        # event.addMotor(0, 80, 80, 250)
-        # self.queue.append(event) 
-       
-       
         
     #All files come through here, will split up a file into chunks of 2000 lines and create gcode events for them as well as 
     #ids so they can be grouped together
@@ -201,11 +191,16 @@ class TimelineManager:
                 Gcode.append(line)
             return Gcode
     
-    #clears and resets the queue
-    def clear_Queue(self):
+    #clears and resets the timeline
+    def reset(self):
         self.queue = []
         self.place = 0
         self.finish = False 
+        self.svgs = []
+        self.queue.append(GCode_Event(1, "start_up.gcode", "Start Up Printer")) #Adds start up printer event
+        self.queue.append(GCode_Event(1, "cool_down.gcode", "Cool Down Printer", "finishing")) #adds cool down printer event
+        self.printMan.Api.fileUpload("start_up.gcode") #uploads both to octoprint
+        self.printMan.Api.fileUpload("cool_down.gcode")
     
     #used for layer visualization on front end
     def addLayer(self, svgstr:str) -> None:
@@ -276,6 +271,7 @@ class TimelineManager:
             
         self.write_file(new_Gcode, n)
         self.add_Gcode_event(n, name, "normal")
+    
 
 
      #Note: The below code was used to attempt continous multiprints. 

@@ -8,6 +8,7 @@ import math
 # from Gcode_event import GCode_Event
 from timelineManager import TimelineManager, Bed
 timeline = TimelineManager()
+global files
 files = []
 
 #Tells if the printer has started
@@ -38,12 +39,14 @@ app = Flask(__name__)
 
 #Home route
 def home():
+    global files
     global progress
     return render_template("index.html", files = files, events = timeline.get_events(), printerStart = printerStart, toios = timeline.toioMan.names, start = printerStart,  current = current, progress = progress)
 
 #Route for adding toio
 @app.route('/toio',methods=['POST', 'GET'])
 def toio():
+    global files
     global progress
     if request.method == 'POST':
         num = request.form.get("num")
@@ -61,6 +64,7 @@ def update():
 #route for target testing, not used in final
 @app.route('/target',methods=['POST', 'GET'])
 def target():
+    global files
     global progress
     timeline.toioMan.target(0,100,100)        
     return render_template('index.html', files = files, events = timeline.get_events(), printerStart = printerStart,  toios = timeline.toioMan.names, start = printerStart,  current = current)
@@ -68,17 +72,20 @@ def target():
 #route for motor testing, not used in final
 @app.route('/motor',methods=['POST', 'GET'])
 def motor():
+    global files
     timeline.toioMan.motor(0,50,50,255)        
     return render_template('index.html', files = files, events = timeline.get_events(), printerStart = printerStart,  toios = timeline.toioMan.names, start = printerStart,  current = current )
     
 #File Uploading, Saves the event into an array of files
 @app.route('/upload')
 def upload_file():
+   
    return render_template('upload.html')
 
 #Finish placing toio buttons, adds the events based on configurations
 @app.route('/finish_toio',methods=['POST', 'GET'])
 def finish_toio():
+    global files
     global print_form
     global gcode_to_add 
     global docks_to_add 
@@ -109,6 +116,7 @@ def finish_toio():
 #docks to add and toios to add
 @app.route('/toio_event',methods=['POST', 'GET'])
 def toio_event():
+    global files
     global print_form
     global gcode_to_add 
     global docks_to_add 
@@ -159,6 +167,7 @@ def toio_event():
 #name0 and name1 with name0 being the bottom half up until the height of the toio
 #and name1 being everything above the height of the toio
 def split_files(file, x_bed, y_bed, x,y, toio_name, event_name, index):
+    global files
     cut(file)
     lines = timeline.file_to_array(file)
     height = 0
@@ -195,7 +204,8 @@ def split_files(file, x_bed, y_bed, x,y, toio_name, event_name, index):
     print("Finished This")
 
 #works the same as the one in events, will cut the files start up and cool down out
-def cut(file):
+    def cut(file):
+        global files
         lines = timeline.file_to_array(file)
         # ;BEFORE_LAYER_CHANGE
         # ; Filament-specific end gcode
@@ -225,6 +235,7 @@ def cut(file):
 #Upload files route, will add the name to files and generate layer visualzation 
 @app.route('/uploader',methods=['POST', 'GET'])
 def uploader():
+    global files
     global print_form
     if request.method == 'POST':
         f = request.files['file']
@@ -243,6 +254,7 @@ def uploader():
 
 #Used to get individual layers of gcode for layer visualization
 def get_layers(file):
+    global files
     with open(file, 'r+') as f:
             layers = {}
             layer = []           # where the new modified code will be put
@@ -272,6 +284,7 @@ def get_layers(file):
 @app.route('/printer',methods=['POST', 'GET'])
 def printer():
     global progress
+    global files
     global printerStart
     timeline.start()
     printerStart = True
@@ -280,9 +293,10 @@ def printer():
 #route for canceling the print, Note to ramarko, I am not sure how to clear the svg file generation or reset the timeline javascript
 @app.route('/cancel',methods=['POST', 'GET'])
 def cancel():
+    global files
     global printerStart
     printerStart = False
-    timeline = TimelineManager()
+    timeline.reset()
     timeline.printMan.cancel()
     files = []
    
@@ -301,6 +315,7 @@ def dnd():
 
 #Converts gcode layers to svgs
 def gcodeToSVG(gcode, sidelength = 250):
+    global files
     start = True
     svgstr = ""
     for line in gcode:
@@ -328,6 +343,7 @@ def background():
     global printerStart
     global current
     global progress
+    global files
    
 
     if(printerStart):

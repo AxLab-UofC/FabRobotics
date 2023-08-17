@@ -10,6 +10,7 @@ class Event:
 
     def complete(self):
         self.status = 'complete'
+        
 #Sub class for Toio Specific events
 class ToioEvent(Event):
     def __init__(self, name:str = "default", cmds:list = []):
