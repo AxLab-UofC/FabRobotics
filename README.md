@@ -27,16 +27,16 @@ Good luck! Feel free to reach out to jmlindstrom14@gmail or "RAMARKOS EMAIL" wit
 
 **Software Architecture Explained**
 
-**Server and GUI: **
+**Server and GUI:**
 Our front-end is hosted on a Flask Server, which presents a UI that regularly receives updates from the 3D printer manager and toio manager about the status of the 3D printer, toios, and the print progress. During the Planning Phase, user input is sent to the timeline manager, where it is processed, and new events are generated and added to the timeline on the GUI. During the Execution Phase, the timeline on the GUI presents the live completion and progress of events.
 
-**Timeline Manager: **
+**Timeline Manager:**
 The timeline manager is one of the core technical contributions in FabRobotics, enabling turn-taking control between the toio robots and 3D printer. The timeline manager is comprised of two major components: the timeline generator and and timeline executor. Based on user input, the timeline generator then processes uploaded G-code and the placement of toios into print event(s) and toio event(s). The timeline generator will also automatically add events as necessary, such as placing docks for toios, as well as starting up and cooling down the printer. The timeline executor will then take the list of events and execute them one-by-one through turn-taking, allowing for seamless integration of toio and printer control. Print and toio events are handed off to their respective manager, and the timeline executor will wait for the completion of the previous command before the execution of the next command.
 
-**Toio Manager: **
+**Toio Manager:**
 The toio manager is responsible for constructing and executing toio events, allowing for the control of toio robots during the entirety of the printing process. It manages toio movements on and off the print-bed and enables precise navigation of toios to the selected locations from the Planning Phase. Our toio manager is implemented through the usage of the bluepy library, which allows for communication with BTLE (Bluetooth Low Energy) Devices. By sending and receiving Bluetooth commands, we can directly control each connected toio's position, motor speed, as well as monitor their current battery.
 
-**Print Manager and OctoPrint: **
+**Print Manager and OctoPrint:**
 The 3D printer manager handles the execution, modification, and monitoring of G-code on the printer. Through the OctoPrint API, The print manager can wirelessly upload, start, and cancel prints. However, our implementation of communication through the OctoPrint API has a limitation of only allowing G-code files of a length shorter than 2000 lines to be uploaded. To account for this, a G-code event is segmented into smaller files when uploaded files are processed. The 3D printer manager also processes prints for required edits when printing while using toios as a bed or as supports. When using toios as beds, the 3D printer manager will add a toio dock event, as well as edit the uploaded G-code file(s) to raise the entire print to the height of the toio. When using toios as supports, the 3D printer manager will remove all G-codes that would intersect with a toio, and splits the print in two to allow the toio to move into position when it can begin acting as a support.
 
 
