@@ -163,6 +163,37 @@ def toio_event():
         
     return render_template('index.html', files = files, events = timeline.get_events(), printerStart = printerStart,  toios = timeline.toioMan.names, start = printerStart)
 
+
+#works the same as the one in events, will cut the files start up and cool down out
+def cut(file):
+    global files
+    lines = timeline.file_to_array(file)
+    # ;BEFORE_LAYER_CHANGE
+    # ; Filament-specific end gcode
+    with open(file, 'w') as f:
+        new_Gcode = ""
+        start = False
+        finish = False
+        beginning = False
+        for line in lines:
+            if("M900 K0.2" in line):
+                beginning = True
+        for line in lines:
+            if(beginning):
+                if("M900 K0.2" in line):
+                    start = True
+            else:
+                start = True
+            if("; Filament-specific end gcode" in line):
+                finish = True
+                
+            if(start == True and finish == False):
+                new_Gcode += line 
+        # print(new_Gcode)
+        f.seek(0)           # set the cursor to the beginning of the file
+        f.write(new_Gcode)
+
+
 #used for supports, will split the file into 2 files
 #name0 and name1 with name0 being the bottom half up until the height of the toio
 #and name1 being everything above the height of the toio
@@ -202,35 +233,6 @@ def split_files(file, x_bed, y_bed, x,y, toio_name, event_name, index):
     timeline.write_file(file2,file_name)
     timeline.add_Gcode_event(file_name, event_name, "driver")
     print("Finished This")
-
-#works the same as the one in events, will cut the files start up and cool down out
-    def cut(file):
-        global files
-        lines = timeline.file_to_array(file)
-        # ;BEFORE_LAYER_CHANGE
-        # ; Filament-specific end gcode
-        with open(file, 'w') as f:
-            new_Gcode = ""
-            start = False
-            finish = False
-            beginning = False
-            for line in lines:
-                if("M900 K0.2" in line):
-                    beginning = True
-            for line in lines:
-                if(beginning):
-                    if("M900 K0.2" in line):
-                        start = True
-                else:
-                    start = True
-                if("; Filament-specific end gcode" in line):
-                    finish = True
-                    
-                if(start == True and finish == False):
-                    new_Gcode += line 
-            # print(new_Gcode)
-            f.seek(0)           # set the cursor to the beginning of the file
-            f.write(new_Gcode)
 
 #Upload files route, will add the name to files and generate layer visualzation 
 @app.route('/uploader',methods=['POST', 'GET'])

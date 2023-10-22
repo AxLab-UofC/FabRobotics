@@ -7,6 +7,7 @@ class Print_Manager:
     def __init__(self):
         self.Api = OctoprintAPI("axlab.local/", "", "F5EFDBD8F3AB4C03B8C690B0F6917702") #API Key and address, will change for new instance of octoprint
         self.Api.connect_to_printer() 
+        time.sleep(3)
         # http://axlab.local/api/connection
        
 
