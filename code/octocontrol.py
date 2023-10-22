@@ -3,7 +3,7 @@ import argparse
 import sys
 import json
 
-//Based of this repo https://github.com/dragondgold/octo-control/blob/master/octocontrol.py by 'Andres Torti'
+#Based of this repo https://github.com/dragondgold/octo-control/blob/master/octocontrol.py by 'Andres Torti'
 
 class OctoprintAPI:
     """
