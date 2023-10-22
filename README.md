@@ -23,7 +23,7 @@ Set up the first Pi with OctoPi Software and adjust to the print settings of you
 Clone this Repo onto the second Raspberry Pi. And install all libraries used.
 Note: Make sure that you change the API Key and local address to those from your Octoprint instance. You will also need to get the mac address of your toio robots to be able to connect to them. 
 
-Good luck! Feel free to reach out to jmlindstrom14@gmail or "RAMARKOS EMAIL" with any questions.
+Good luck! Feel free to reach out to jmlindstrom14@gmail or ramarkob@uchicago.edu with any questions.
 
 **Software Architecture Explained**
 
