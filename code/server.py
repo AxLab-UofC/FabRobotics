@@ -26,7 +26,10 @@ global progress
 global gcode_to_add 
 global docks_to_add 
 global toios_to_add 
-global support_vals
+global supports_to_add
+global support_vals 
+supports_to_add = {"fh": None, "x": [], "y": [], "x_bed": [], "y_bed": [], "index": []}
+
 stuff = []
 gcode_to_add = []
 docks_to_add = []
@@ -90,9 +93,10 @@ def finish_toio():
     global gcode_to_add 
     global docks_to_add 
     global toios_to_add 
+    global supports_to_add
     global stuff
-    if(print_form == "support"):
-        split_files(support_vals[0], support_vals[1], support_vals[2], support_vals[3], support_vals[4], support_vals[5],support_vals[6], support_vals[7])
+    if (print_form == "support"):
+        split_files(supports_to_add)
     else:
         for dock in docks_to_add:
             x = dock[0]
@@ -138,6 +142,13 @@ def toio_event():
         event_name = "Move Toio " + name + " as support"
         print("GOT HERE")
         index = timeline.toioMan.names.index(int(name))
+        supports_to_add["fh"] = files[-1]
+        supports_to_add["x"].append(x)
+        supports_to_add["y"].append(y)
+        supports_to_add["x_bed"].append(x_bed)
+        supports_to_add["y_bed"].append(y_bed)
+        supports_to_add["index"].append(index)
+
         support_vals = [files[-1], x_bed, y_bed, x, y, event_name, "", index]
 
 
@@ -197,15 +208,19 @@ def cut(file):
 #used for supports, will split the file into 2 files
 #name0 and name1 with name0 being the bottom half up until the height of the toio
 #and name1 being everything above the height of the toio
-def split_files(file, x_bed, y_bed, x,y, toio_name, event_name, index):
+#file, x_bed, y_bed, x,y, toio_name, event_name, index
+#fh, x_bed, y_bed, x, y, index
+#{"fh": None, "x": [], "y": [], "x_bed": [], "y_bed": [], "index": []}
+def split_files(dc):
     global files
-    cut(file)
-    lines = timeline.file_to_array(file)
+    fh = dc["fh"]
+    cut(fh)
+    lines = timeline.file_to_array(fh)
     height = 0
     place = 0
     file1 = []
     file2 = []
-    file_name = file[:len(file)-6] + "0"+ ".gcode"
+    file_name = fh[:len(fh)-6] + "0"+ ".gcode"
     event_name = "Start Print <" + file_name[:len(file_name)-7] + "> [1/2]"
     for line in lines:
         if(height >= 26.4):
@@ -222,13 +237,15 @@ def split_files(file, x_bed, y_bed, x,y, toio_name, event_name, index):
         place = place + 1
     file2 = lines[place:]
     timeline.write_file(file1,file_name)
-    timeline.add_Gcode_event(file_name, event_name, "support", x_bed, y_bed)
-    event = ToioEvent(toio_name)
-    event.addTarget(index, x, y+40, 270)
-    event.addTarget(index, x, y+20, 270)
-    event.addTarget(index,x,y, 270)
-    timeline.addEvent(event)
-    file_name = file[:len(file)-6] + "1"+ ".gcode"
+    timeline.add_Gcode_event(file_name, event_name, "support", dc["x_bed"], dc["y_bed"])
+    for (i, _) in enumerate(dc["x"]):
+        (index, x, y) = (dc["index"][i], dc["x"][i], dc["y"][i])
+        event = ToioEvent("Move toio" +  str(index) + " as support")
+        event.addTarget(index, x, y + 40, 270)
+        event.addTarget(index, x, y + 20, 270)
+        event.addTarget(index, x, y, 270)
+        timeline.addEvent(event)
+    file_name = fh[:len(fh)-6] + "1"+ ".gcode"
     event_name = "Continue Print <" + file_name[:len(file_name)-7] + "> [2/2]"
     timeline.write_file(file2,file_name)
     timeline.add_Gcode_event(file_name, event_name, "driver")

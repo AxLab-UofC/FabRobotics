@@ -37,7 +37,7 @@ class TimelineManager:
         
     #All files come through here, will split up a file into chunks of 2000 lines and create gcode events for them as well as 
     #ids so they can be grouped together
-    def add_Gcode_event(self, file, name = "default", style = "normal", x = -1, y = -1):
+    def add_Gcode_event(self, file, name = "default", style = "normal", x = [], y = []):
         lines = self.file_to_array(file)
         if(len(lines)>2000):
             file_name = file
