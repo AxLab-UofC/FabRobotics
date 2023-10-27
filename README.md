@@ -17,6 +17,9 @@ To set up FabRobotics you need a few things:
 - any 3D printer
 - 2 Raspberry Pis(We used 2 Raspberry Pi 4 Model B)
 - Toio Robots
+- Custom 3D print bed with a toio mat embedded inside.
+    - We used a sheet of PEI a standard prusa 3D printing bed(we used the full size as opposed to the prusa mini bed) and a toio mat.
+    - Note: Coordinates in the code will need to change to adjust to the toio coordinates of the bed that you use.
 
 Set up the first Pi with OctoPi Software and adjust to the print settings of your specific printer. The info for all of this can be found online. We found this link helpful: https://www.raspberrypi.com/tutorials/set-up-raspberry-pi-octoprint/#:~:text=Set%20up%20OctoPrint,details%20of%20your%203D%20printer.
 
@@ -24,6 +27,21 @@ Clone this Repo onto the second Raspberry Pi. And install all libraries used.
 Note: Make sure that you change the API Key and local address to those from your Octoprint instance. You will also need to get the mac address of your toio robots to be able to connect to them. 
 
 Good luck! Feel free to reach out to jmlindstrom14@gmail or ramarkob@uchicago.edu with any questions.
+
+**How to use our System**
+
+Print on top of Toio: 
+- Upload a file through the GUI making sure to hit "Use toio as bed". it should visualize the layers as an SVG.
+- Then connect a toio, after a toio is connected you should see its name under the planning UI section.
+- Click on the svg to place the toio making sure that the whole print can fit on the robot.
+- After you are happy press confirm toio placement. Repeat the process for of selecting a toio and confirming placement for as many toios as you would like.
+- When you are done placing toios, hit finished placing toio and the timeline will be generated. The toios need to be placed on the bed before hitting start.
+
+Use the toio a support:
+- Very similar to using the toio as a bed.
+- Repeat all the steps above except hit "use toio as a support" instead
+- Otherwise all steps are the same.
+
 
 **Software Architecture Explained**
 
